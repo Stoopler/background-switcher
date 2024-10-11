@@ -1,37 +1,69 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { useAppStore } from '../store/appStore'
 
 function TwitchAuth() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [userProfile, setUserProfile] = useState({ displayName: '', profilePicture: '' })
+  const { 
+    twitchConnected, 
+    twitchAccessToken,
+    setTwitchConnected,
+    setTwitchAccessToken
+  } = useAppStore()
+
+  useEffect(() => {
+    if (twitchAccessToken) {
+      fetchUserProfile(twitchAccessToken)
+    }
+  }, [twitchAccessToken])
 
   const handleLogin = () => {
-    // TODO: Implement Twitch OAuth login
-    setIsLoggedIn(true)
-    setUserProfile({ displayName: 'Example User', profilePicture: 'https://example.com/profile.jpg' })
+    const clientId = process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID
+    const redirectUri = process.env.NODE_ENV === 'development'
+      ? `http://localhost:3000/api/twitch/callback`
+      : 'background-changer://oauth/callback'
+    const scopes = 'channel:read:redemptions channel:manage:redemptions'
+
+    const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scopes}`
+
+    window.location.href = authUrl
   }
 
   const handleLogout = () => {
-    // TODO: Implement logout
-    setIsLoggedIn(false)
-    setUserProfile({ displayName: '', profilePicture: '' })
+    setTwitchAccessToken(null)
+    setTwitchConnected(false)
+  }
+
+  const fetchUserProfile = async (accessToken: string) => {
+    try {
+      const response = await fetch('https://api.twitch.tv/helix/users', {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Client-Id': process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID!
+        }
+      })
+      const data = await response.json()
+      if (data.data && data.data.length > 0) {
+        setTwitchConnected(true)
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error)
+      handleLogout()
+    }
   }
 
   return (
     <div className="bg-white p-4 rounded-lg shadow">
       <h2 className="text-xl font-semibold mb-4">Twitch Authentication</h2>
-      {isLoggedIn ? (
-        <div>
-          <div className="flex items-center mb-4">
-            <img src={userProfile.profilePicture} alt="Profile" className="w-10 h-10 rounded-full mr-2" />
-            <span>{userProfile.displayName}</span>
-          </div>
-          <Button onClick={handleLogout}>Log Out</Button>
-        </div>
+      {twitchConnected ? (
+        <Button onClick={handleLogout} className="w-full bg-[#6441a5] hover:bg-[#7d5bbe] text-white">
+          Disconnect from Twitch
+        </Button>
       ) : (
-        <Button onClick={handleLogin}>Log In with Twitch</Button>
+        <Button onClick={handleLogin} className="w-full bg-[#6441a5] hover:bg-[#7d5bbe] text-white">
+          Authenticate with Twitch
+        </Button>
       )}
     </div>
   )
