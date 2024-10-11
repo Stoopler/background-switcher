@@ -8,6 +8,7 @@ interface AppState {
   twitchAccessToken: string | null
   obsWebsocketUrl: string
   obsPort: string
+  obsPassword: string
   openAIApiKey: string
   showSettings: boolean
   setTwitchConnected: (connected: boolean) => void
@@ -16,6 +17,7 @@ interface AppState {
   setTwitchAccessToken: (token: string | null) => void
   setObsWebsocketUrl: (url: string) => void
   setObsPort: (port: string) => void
+  setObsPassword: (password: string) => void
   setOpenAIApiKey: (key: string) => void
   setShowSettings: (show: boolean) => void
 }
@@ -29,6 +31,7 @@ export const useAppStore = create<AppState>()(
       twitchAccessToken: null,
       obsWebsocketUrl: '',
       obsPort: '',
+      obsPassword: '',
       openAIApiKey: '',
       showSettings: false,
       setTwitchConnected: (connected) => set({ twitchConnected: connected }),
@@ -37,6 +40,7 @@ export const useAppStore = create<AppState>()(
       setTwitchAccessToken: (token) => set({ twitchAccessToken: token }),
       setObsWebsocketUrl: (url) => set({ obsWebsocketUrl: url }),
       setObsPort: (port) => set({ obsPort: port }),
+      setObsPassword: (password) => set({ obsPassword: password }),
       setOpenAIApiKey: (key) => set({ openAIApiKey: key }),
       setShowSettings: (show) => set({ showSettings: show }),
     }),

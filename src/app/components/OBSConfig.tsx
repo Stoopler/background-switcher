@@ -1,21 +1,33 @@
 'use client'
 
-import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useAppStore } from '../store/appStore'
 
-function OBSConfig() {
-  const [websocketUrl, setWebsocketUrl] = useState('')
-  const [port, setPort] = useState('')
-  const [isConnected, setIsConnected] = useState(false)
-  const [imageSources, setImageSources] = useState([])
-  const [selectedSource, setSelectedSource] = useState('')
+interface OBSConfigProps {
+  connect: (url: string, port: string | number, password: string) => Promise<void>
+  disconnect: () => Promise<void>
+  obsError: string | null
+  isConnected: boolean
+}
 
-  const handleConnect = () => {
-    // TODO: Implement OBS WebSocket connection
-    setIsConnected(true)
-    setImageSources(['Source 1', 'Source 2', 'Source 3']) // Example sources
+function OBSConfig({
+  connect,
+  disconnect,
+  obsError,
+  isConnected
+}: OBSConfigProps) {
+  const { 
+    obsWebsocketUrl, 
+    setObsWebsocketUrl, 
+    obsPort, 
+    setObsPort,
+    obsPassword,
+    setObsPassword
+  } = useAppStore()
+
+  const handleConnect = async () => {
+    await connect(obsWebsocketUrl, obsPort, obsPassword)
   }
 
   return (
@@ -25,32 +37,25 @@ function OBSConfig() {
         <Input
           type="text"
           placeholder="WebSocket URL"
-          value={websocketUrl}
-          onChange={(e) => setWebsocketUrl(e.target.value)}
+          value={obsWebsocketUrl}
+          onChange={(e) => setObsWebsocketUrl(e.target.value)}
         />
         <Input
           type="number"
           placeholder="Port"
-          value={port}
-          onChange={(e) => setPort(e.target.value)}
+          value={obsPort}
+          onChange={(e) => setObsPort(e.target.value)}
         />
-        <Button onClick={handleConnect} disabled={isConnected}>
-          {isConnected ? 'Connected' : 'Connect to OBS'}
+        <Input
+          type="password"
+          placeholder="Password"
+          value={obsPassword}
+          onChange={(e) => setObsPassword(e.target.value)}
+        />
+        <Button onClick={isConnected ? disconnect : handleConnect}>
+          {isConnected ? 'Disconnect from OBS' : 'Connect to OBS'}
         </Button>
-        {isConnected && (
-          <Select onValueChange={setSelectedSource} value={selectedSource}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select image source" />
-            </SelectTrigger>
-            <SelectContent>
-              {imageSources.map((source) => (
-                <SelectItem key={source} value={source}>
-                  {source}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+        {obsError && <p className="text-red-500">{obsError}</p>}
       </div>
     </div>
   )

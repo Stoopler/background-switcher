@@ -1,28 +1,32 @@
 'use client'
 
-import { useEffect } from "react"
+import React, { useEffect, useState, useCallback } from "react"
 import { useAppStore } from './store/appStore'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { CheckCircle2, XCircle } from "lucide-react"
 import TwitchAuth from "./components/TwitchAuth"
 import ChannelPointConfig from "./components/ChannelPointConfig"
 import OBSConfig from "./components/OBSConfig"
 import { UserProfileDisplay } from "./components/UserProfileDisplay"
+import { useOBSWebSocket } from "./hooks/useOBSWebSocket"
 
 export default function Component() {
   const { 
     twitchConnected, 
-    obsConnected, 
+    obsConnected,
+    setObsConnected, 
     openAIConnected,
     showSettings,
     setTwitchConnected,
     setTwitchAccessToken,
-    setShowSettings
+    setShowSettings,
+    setOpenAIConnected // Remove this line if you're not using setOpenAIConnected
   } = useAppStore()
+  const { connect: connectOBS, disconnect: disconnectOBS, getImageSources, error: obsError, isConnected } = useOBSWebSocket()
+  const [imageSources, setImageSources] = useState<string[]>([])
+  const [selectedSource, setSelectedSource] = useState('')
 
   useEffect(() => {
     const checkForToken = async () => {
@@ -32,7 +36,6 @@ export default function Component() {
         if (token) {
           setTwitchAccessToken(token)
           setTwitchConnected(true)
-          // Remove the cookie after we've stored the token
           await fetch('/api/auth/clear-token')
         }
       }
@@ -41,39 +44,74 @@ export default function Component() {
     checkForToken()
   }, [setTwitchAccessToken, setTwitchConnected])
 
+  useEffect(() => {
+    setObsConnected(isConnected)
+  }, [isConnected, setObsConnected])
+
+  const fetchImageSources = useCallback(async () => {
+    try {
+      const sources = await getImageSources()
+      setImageSources(sources)
+      if (sources.length === 0) {
+        console.warn('No image sources found in OBS')
+      }
+    } catch (error) {
+      console.error('Error fetching image sources:', error)
+      setImageSources([])
+    }
+  }, [getImageSources]);  
+
+  useEffect(() => {
+    if (obsConnected) {
+      fetchImageSources()
+    } else {
+      setImageSources([])
+    }
+  }, [obsConnected, fetchImageSources])
+
   return (
     <div className="flex flex-col h-screen bg-gray-100 text-gray-800">
       {/* Top menu bar */}
       <div className="bg-gray-200 p-1 flex justify-between items-center">
         <div className="flex">
           <button className="px-2 py-1 text-sm hover:bg-gray-300">File</button>
-          <Dialog open={showSettings} onOpenChange={setShowSettings}>
-            <DialogTrigger asChild>
-              <button className="px-2 py-1 text-sm hover:bg-gray-300">Settings</button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Settings</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 mt-4">
-                <TwitchAuth />
-                <OBSConfig />
-                <Button variant="outline" className="w-full" onClick={() => setOpenAIConnected(!openAIConnected)}>
-                  Set OpenAI API Key
-                </Button>
-                <ChannelPointConfig />
-              </div>
-            </DialogContent>
-          </Dialog>
+          <button 
+            className="px-2 py-1 text-sm hover:bg-gray-300"
+            onClick={() => setShowSettings(true)}
+          >
+            Settings
+          </button>
           <button className="px-2 py-1 text-sm hover:bg-gray-300">Help</button>
         </div>
         <UserProfileDisplay />
       </div>
 
+      {/* Settings Dialog */}
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Settings</DialogTitle>
+            <DialogDescription>
+              Configure your connections and preferences here.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <TwitchAuth />
+            <OBSConfig
+              connect={connectOBS}
+              disconnect={disconnectOBS}
+              obsError={obsError}
+              isConnected={isConnected}
+            />
+            <ChannelPointConfig />
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Main content area */}
       <div className="flex-1 p-4 overflow-auto">
-        <h1 className="text-2xl font-bold mb-4">Twitch & OpenAI Integration</h1>
-
+        <h1 className="text-2xl font-bold mb-4">Stoopler Tools</h1>
+        <h4 className="text-1xl mb-4">Channel Point AI Generated Background Changer</h4>
         <div className="space-y-4">
           <div className="bg-white p-4 rounded shadow">
             <h2 className="text-lg font-semibold mb-2">Connection Status</h2>
@@ -105,20 +143,28 @@ export default function Component() {
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded shadow">
-            <h2 className="text-lg font-semibold mb-2">Image Source</h2>
-            <Label htmlFor="image-source" className="block mb-1">Select Image Source:</Label>
-            <Select defaultValue="starting-soon">
-              <SelectTrigger id="image-source" className="w-full">
-                <SelectValue placeholder="Select Image Source" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="starting-soon">Starting Soon IMG</SelectItem>
-                <SelectItem value="be-right-back">Be Right Back IMG</SelectItem>
-                <SelectItem value="stream-ended">Stream Ended IMG</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {obsConnected && (
+            <div className="bg-white p-4 rounded shadow">
+              <h2 className="text-lg font-semibold mb-2">Image Source</h2>
+              <Label htmlFor="image-source" className="block mb-1">Select Image Source:</Label>
+              <Select
+                value={selectedSource}
+                onValueChange={setSelectedSource}
+                onOpenChange={fetchImageSources}
+              >
+                <SelectTrigger id="image-source" className="w-full">
+                  <SelectValue placeholder="Select Image Source" />
+                </SelectTrigger>
+                <SelectContent>
+                  {imageSources.map((source) => (
+                    <SelectItem key={source} value={source}>
+                      {source}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
       </div>
 
