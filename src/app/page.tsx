@@ -11,6 +11,7 @@ import { CheckCircle2, XCircle } from "lucide-react"
 import TwitchAuth from "./components/TwitchAuth"
 import ChannelPointConfig from "./components/ChannelPointConfig"
 import OBSConfig from "./components/OBSConfig"
+import { UserProfileDisplay } from "./components/UserProfileDisplay"
 
 export default function Component() {
   const { 
@@ -43,27 +44,30 @@ export default function Component() {
   return (
     <div className="flex flex-col h-screen bg-gray-100 text-gray-800">
       {/* Top menu bar */}
-      <div className="bg-gray-200 p-1 flex">
-        <button className="px-2 py-1 text-sm hover:bg-gray-300">File</button>
-        <Dialog open={showSettings} onOpenChange={setShowSettings}>
-          <DialogTrigger asChild>
-            <button className="px-2 py-1 text-sm hover:bg-gray-300">Settings</button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Settings</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 mt-4">
-              <TwitchAuth />
-              <OBSConfig />
-              <Button variant="outline" className="w-full" onClick={() => setOpenAIConnected(!openAIConnected)}>
-                Set OpenAI API Key
-              </Button>
-              <ChannelPointConfig />
-            </div>
-          </DialogContent>
-        </Dialog>
-        <button className="px-2 py-1 text-sm hover:bg-gray-300">Help</button>
+      <div className="bg-gray-200 p-1 flex justify-between items-center">
+        <div className="flex">
+          <button className="px-2 py-1 text-sm hover:bg-gray-300">File</button>
+          <Dialog open={showSettings} onOpenChange={setShowSettings}>
+            <DialogTrigger asChild>
+              <button className="px-2 py-1 text-sm hover:bg-gray-300">Settings</button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Settings</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 mt-4">
+                <TwitchAuth />
+                <OBSConfig />
+                <Button variant="outline" className="w-full" onClick={() => setOpenAIConnected(!openAIConnected)}>
+                  Set OpenAI API Key
+                </Button>
+                <ChannelPointConfig />
+              </div>
+            </DialogContent>
+          </Dialog>
+          <button className="px-2 py-1 text-sm hover:bg-gray-300">Help</button>
+        </div>
+        <UserProfileDisplay />
       </div>
 
       {/* Main content area */}
