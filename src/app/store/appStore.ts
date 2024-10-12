@@ -1,6 +1,14 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+interface RewardInfo {
+  id: string
+  title: string
+  cost: number
+  prompt: string
+  is_enabled: boolean
+}
+
 interface AppState {
   twitchConnected: boolean
   obsConnected: boolean
@@ -20,6 +28,8 @@ interface AppState {
   setObsPassword: (password: string) => void
   setOpenAIApiKey: (key: string) => void
   setShowSettings: (show: boolean) => void
+  channelPointReward: RewardInfo | null
+  setChannelPointReward: (reward: RewardInfo | null) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -43,6 +53,8 @@ export const useAppStore = create<AppState>()(
       setObsPassword: (password) => set({ obsPassword: password }),
       setOpenAIApiKey: (key) => set({ openAIApiKey: key }),
       setShowSettings: (show) => set({ showSettings: show }),
+      channelPointReward: null,
+      setChannelPointReward: (reward) => set({ channelPointReward: reward }),
     }),
     {
       name: 'background-changer-storage',

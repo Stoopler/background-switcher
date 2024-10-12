@@ -1,14 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { useAppStore } from '../store/appStore'
-import Image from 'next/image'
-
-interface UserProfile {
-  displayName: string
-  profilePictureUrl: string
-}
 
 function TwitchAuth() {
   const { 
@@ -17,7 +11,6 @@ function TwitchAuth() {
     setTwitchConnected,
     setTwitchAccessToken
   } = useAppStore()
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
 
   useEffect(() => {
     if (twitchAccessToken) {
@@ -40,7 +33,6 @@ function TwitchAuth() {
   const handleLogout = () => {
     setTwitchAccessToken(null)
     setTwitchConnected(false)
-    setUserProfile(null)
   }
 
   const fetchUserProfile = async (accessToken: string) => {
@@ -53,11 +45,8 @@ function TwitchAuth() {
       })
       const data = await response.json()
       if (data.data && data.data.length > 0) {
-        setUserProfile({
-          displayName: data.data[0].display_name,
-          profilePictureUrl: data.data[0].profile_image_url
-        })
         setTwitchConnected(true)
+        setTwitchAccessToken(accessToken)
       }
     } catch (error) {
       console.error('Error fetching user profile:', error)
