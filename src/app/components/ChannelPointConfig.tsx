@@ -232,59 +232,61 @@ function ChannelPointConfig() {
   }
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow">
-      <h2 className="text-xl font-semibold mb-4">Channel Point Configuration</h2>
-      <div className="space-y-4">
+    <div className="bg-white p-3 rounded-lg shadow">
+      <h2 className="text-lg font-semibold mb-2">Channel Point Config</h2>
+      <div className="space-y-2">
         <Input
           type="text"
           placeholder="Reward Title"
           value={rewardTitle}
           onChange={(e) => setRewardTitle(e.target.value)}
         />
-        <Input
-          type="number"
-          placeholder="Reward Cost"
-          value={rewardCost}
-          onChange={(e) => setRewardCost(e.target.value)}
-        />
-        <Input
-          type="text"
-          placeholder="Reward Prompt"
-          value={rewardPrompt}
-          onChange={(e) => setRewardPrompt(e.target.value)}
-        />
+        <div className="flex space-x-2">
+          <Input
+            type="number"
+            placeholder="Cost"
+            value={rewardCost}
+            onChange={(e) => setRewardCost(e.target.value)}
+            className="w-1/2"
+          />
+          <Input
+            type="text"
+            placeholder="Prompt"
+            value={rewardPrompt}
+            onChange={(e) => setRewardPrompt(e.target.value)}
+            className="w-1/2"
+          />
+        </div>
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Button onClick={handleSaveReward} disabled={isLoading || !broadcasterId}>
-              {isLoading ? 'Saving...' : 'Save Reward'}
-            </Button>
-            {channelPointReward && (
+          <Button onClick={handleSaveReward} disabled={isLoading || !broadcasterId} size="sm">
+            {isLoading ? 'Saving...' : 'Save'}
+          </Button>
+          {channelPointReward && (
+            <>
               <Button 
                 onClick={handleToggleReward} 
                 disabled={isLoading || !broadcasterId}
                 variant="secondary"
+                size="sm"
               >
                 {channelPointReward.is_enabled ? 'Disable' : 'Enable'}
               </Button>
-            )}
-          </div>
-          {channelPointReward && (
-            <Button
-              onClick={handleDeleteReward}
-              variant="destructive"
-              className={`${deleteConfirmation ? 'animate-pulse' : ''}`}
-              disabled={isLoading || !broadcasterId}
-            >
-              {deleteConfirmation ? 'Really?' : 'Delete'}
-            </Button>
+              <Button
+                onClick={handleDeleteReward}
+                variant="destructive"
+                className={`${deleteConfirmation ? 'animate-pulse' : ''}`}
+                disabled={isLoading || !broadcasterId}
+                size="sm"
+              >
+                {deleteConfirmation ? 'Really?' : 'Delete'}
+              </Button>
+            </>
           )}
         </div>
         {showSuccessMessage && (
-          <p className="text-green-500 transition-opacity duration-300 ease-in-out opacity-100">
-            {successMessage}
-          </p>
+          <p className="text-green-500 text-sm">{successMessage}</p>
         )}
-        {error && <p className="text-red-500">{error}</p>}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
       </div>
     </div>
   )

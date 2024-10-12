@@ -55,17 +55,19 @@ function TwitchAuth() {
   }
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow">
-      <h2 className="text-xl font-semibold mb-4">Twitch Authentication</h2>
-      {twitchConnected ? (
-        <Button onClick={handleLogout} className="w-full bg-[#6441a5] hover:bg-[#7d5bbe] text-white">
-          Disconnect from Twitch
-        </Button>
-      ) : (
-        <Button onClick={handleLogin} className="w-full bg-[#6441a5] hover:bg-[#7d5bbe] text-white">
-          Authenticate with Twitch
-        </Button>
-      )}
+    <div className="bg-white p-3 rounded-lg shadow">
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-semibold">Twitch Auth</h2>
+        {twitchConnected ? (
+          <Button onClick={handleLogout} size="sm" variant="outline" className="bg-red-100 hover:bg-red-200 text-red-700">
+            Disconnect
+          </Button>
+        ) : (
+          <Button onClick={handleLogin} size="sm" variant="outline" className="bg-purple-100 hover:bg-purple-200 text-purple-700">
+            Connect
+          </Button>
+        )}
+      </div>
     </div>
   )
 }

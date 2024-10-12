@@ -88,22 +88,26 @@ export default function Component() {
 
       {/* Settings Dialog */}
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl w-full max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Settings</DialogTitle>
             <DialogDescription>
               Configure your connections and preferences here.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <TwitchAuth />
-            <OBSConfig
-              connect={connectOBS}
-              disconnect={disconnectOBS}
-              obsError={obsError}
-              isConnected={isConnected}
-            />
-            <ChannelPointConfig />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div className="space-y-4">
+              <TwitchAuth />
+              <OBSConfig
+                connect={connectOBS}
+                disconnect={disconnectOBS}
+                obsError={obsError}
+                isConnected={isConnected}
+              />
+            </div>
+            <div>
+              <ChannelPointConfig />
+            </div>
           </div>
         </DialogContent>
       </Dialog>
