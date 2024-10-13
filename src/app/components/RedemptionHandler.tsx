@@ -6,7 +6,7 @@ import { useAppStore } from '../store/appStore'
 
 export function RedemptionHandler() {
   const redemptions = useChannelPointRedemptions()
-  const { twitchAccessToken, channelPointReward, addLogEntry } = useAppStore()
+  const { twitchAccessToken, channelPointReward, broadcasterId, addLogEntry } = useAppStore()
 
   const handleRedemption = async (redemptionId: string, userInput: string, userName: string) => {
     addLogEntry('Channel Point Redeemed', `User: ${userName}, Input: ${userInput}`)
@@ -16,7 +16,7 @@ export function RedemptionHandler() {
 
     // After generating the image, update the redemption status
     try {
-      const response = await fetch(`https://api.twitch.tv/helix/channel_points/custom_rewards/redemptions?broadcaster_id=${channelPointReward?.broadcaster_id}&reward_id=${channelPointReward?.id}&id=${redemptionId}`, {
+      const response = await fetch(`https://api.twitch.tv/helix/channel_points/custom_rewards/redemptions?broadcaster_id=${broadcasterId}&reward_id=${channelPointReward?.id}&id=${redemptionId}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${twitchAccessToken}`,

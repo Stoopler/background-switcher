@@ -3,12 +3,6 @@
 import { useEffect } from 'react'
 import { useAppStore } from '../store/appStore'
 
-interface LogEntry {
-  message: string
-  timestamp: Date
-  details?: string
-}
-
 export function DebugLog() {
   const { twitchConnected, obsConnected, channelPointReward, addLogEntry, debugLog } = useAppStore()
 
