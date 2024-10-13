@@ -107,6 +107,7 @@ export default function Component() {
               <OBSConfig
                 connect={connectOBS}
                 disconnect={disconnectOBS}
+                getImageSources={getImageSources}
                 obsError={obsError}
                 isConnected={isConnected}
               />

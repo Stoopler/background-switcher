@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect, useCallback } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -8,6 +9,7 @@ import { useAppStore } from '../store/appStore'
 interface OBSConfigProps {
   connect: (url: string, port: string | number, password: string) => Promise<void>
   disconnect: () => Promise<void>
+  getImageSources: () => Promise<string[]>
   obsError: string | null
   isConnected: boolean
 }
@@ -15,6 +17,7 @@ interface OBSConfigProps {
 function OBSConfig({
   connect,
   disconnect,
+  getImageSources,
   obsError,
   isConnected
 }: OBSConfigProps) {
@@ -27,9 +30,13 @@ function OBSConfig({
     setObsPassword,
     obsSourceType,
     setObsSourceType,
+    obsSelectedSource,
+    setObsSelectedSource,
     obsBrowserSourceUrl,
     generateBrowserSourceUrl
   } = useAppStore()
+
+  const [imageSources, setImageSources] = useState<string[]>([])
 
   const handleConnect = async () => {
     await connect(obsWebsocketUrl, obsPort, obsPassword)
@@ -39,8 +46,25 @@ function OBSConfig({
     setObsSourceType(type)
     if (type === 'browser' && !obsBrowserSourceUrl) {
       generateBrowserSourceUrl()
+    } else if (type === 'image') {
+      fetchImageSources()
     }
   }
+
+  const fetchImageSources = useCallback(async () => {
+    if (isConnected && obsSourceType === 'image') {
+      try {
+        const sources = await getImageSources()
+        setImageSources(sources)
+      } catch (error) {
+        console.error('Error fetching image sources:', error)
+      }
+    }
+  }, [isConnected, obsSourceType, getImageSources])
+
+  useEffect(() => {
+    fetchImageSources()
+  }, [fetchImageSources])
 
   return (
     <div className="bg-white p-3 rounded-lg shadow">
@@ -78,6 +102,21 @@ function OBSConfig({
             <SelectItem value="browser">Browser Source</SelectItem>
           </SelectContent>
         </Select>
+
+        {obsSourceType === 'image' && isConnected && (
+          <Select value={obsSelectedSource} onValueChange={setObsSelectedSource}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select image source" />
+            </SelectTrigger>
+            <SelectContent>
+              {imageSources.map((source) => (
+                <SelectItem key={source} value={source}>
+                  {source}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
         {obsSourceType === 'browser' && (
           <div>
