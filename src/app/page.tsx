@@ -11,6 +11,7 @@ import { useOBSWebSocket } from "./hooks/useOBSWebSocket"
 import { DebugLog } from './components/DebugLog'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { RedemptionQueue } from './components/RedemptionQueue'
+import { OpenAIConfig } from './components/OpenAIConfig'
 
 export default function Component() {
   const { 
@@ -111,6 +112,7 @@ export default function Component() {
                 obsError={obsError}
                 isConnected={isConnected}
               />
+              <OpenAIConfig />
             </div>
             <div>
               <ChannelPointConfig />

@@ -25,6 +25,7 @@ interface AppState {
   obsPort: string
   obsPassword: string
   openAIApiKey: string
+  openAIOrganizationId: string
   showSettings: boolean
   setTwitchConnected: (connected: boolean) => void
   setObsConnected: (connected: boolean) => void
@@ -34,6 +35,7 @@ interface AppState {
   setObsPort: (port: string) => void
   setObsPassword: (password: string) => void
   setOpenAIApiKey: (key: string) => void
+  setOpenAIOrganizationId: (id: string) => void
   setShowSettings: (show: boolean) => void
   channelPointReward: RewardInfo | null
   setChannelPointReward: (reward: RewardInfo | null) => void
@@ -62,6 +64,7 @@ export const useAppStore = create<AppState>()(
       obsPort: '',
       obsPassword: '',
       openAIApiKey: '',
+      openAIOrganizationId: '',
       showSettings: false,
       setTwitchConnected: (connected) => set({ twitchConnected: connected }),
       setObsConnected: (connected) => set({ obsConnected: connected }),
@@ -71,6 +74,7 @@ export const useAppStore = create<AppState>()(
       setObsPort: (port) => set({ obsPort: port }),
       setObsPassword: (password) => set({ obsPassword: password }),
       setOpenAIApiKey: (key) => set({ openAIApiKey: key }),
+      setOpenAIOrganizationId: (id) => set({ openAIOrganizationId: id }),
       setShowSettings: (show) => set({ showSettings: show }),
       channelPointReward: null,
       setChannelPointReward: (reward) => set({ channelPointReward: reward }),
