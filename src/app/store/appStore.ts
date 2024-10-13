@@ -30,6 +30,14 @@ interface AppState {
   setShowSettings: (show: boolean) => void
   channelPointReward: RewardInfo | null
   setChannelPointReward: (reward: RewardInfo | null) => void
+  obsSourceType: 'image' | 'browser'
+  obsSelectedSource: string
+  obsBrowserSourceUrl: string
+  setObsSourceType: (type: 'image' | 'browser') => void
+  setObsSelectedSource: (source: string) => void
+  setObsBrowserSourceUrl: (url: string) => void
+  refreshBrowserSourceUrl: () => void
+  generateBrowserSourceUrl: () => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -55,6 +63,16 @@ export const useAppStore = create<AppState>()(
       setShowSettings: (show) => set({ showSettings: show }),
       channelPointReward: null,
       setChannelPointReward: (reward) => set({ channelPointReward: reward }),
+      obsSourceType: 'image',
+      obsSelectedSource: '',
+      obsBrowserSourceUrl: '',
+      setObsSourceType: (type) => set({ obsSourceType: type }),
+      setObsSelectedSource: (source) => set({ obsSelectedSource: source }),
+      setObsBrowserSourceUrl: (url) => set({ obsBrowserSourceUrl: url }),
+      refreshBrowserSourceUrl: () => set({ obsBrowserSourceUrl: `http://localhost:3000/api/image?t=${Date.now()}` }),
+      generateBrowserSourceUrl: () => set((state) => ({ 
+        obsBrowserSourceUrl: `${window.location.origin}/api/image?t=${Date.now()}` 
+      })),
     }),
     {
       name: 'background-changer-storage',

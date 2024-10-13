@@ -2,6 +2,7 @@
 
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAppStore } from '../store/appStore'
 
 interface OBSConfigProps {
@@ -23,11 +24,22 @@ function OBSConfig({
     obsPort, 
     setObsPort,
     obsPassword,
-    setObsPassword
+    setObsPassword,
+    obsSourceType,
+    setObsSourceType,
+    obsBrowserSourceUrl,
+    generateBrowserSourceUrl
   } = useAppStore()
 
   const handleConnect = async () => {
     await connect(obsWebsocketUrl, obsPort, obsPassword)
+  }
+
+  const handleSourceTypeChange = (type: 'image' | 'browser') => {
+    setObsSourceType(type)
+    if (type === 'browser' && !obsBrowserSourceUrl) {
+      generateBrowserSourceUrl()
+    }
   }
 
   return (
@@ -56,6 +68,27 @@ function OBSConfig({
           value={obsPassword}
           onChange={(e) => setObsPassword(e.target.value)}
         />
+        
+        <Select value={obsSourceType} onValueChange={handleSourceTypeChange}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select source type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="image">Image Source</SelectItem>
+            <SelectItem value="browser">Browser Source</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {obsSourceType === 'browser' && (
+          <div>
+            <p className="text-sm mb-1">Browser Source URL:</p>
+            <div className="flex items-center space-x-2">
+              <Input value={obsBrowserSourceUrl} readOnly className="flex-grow" />
+              <Button onClick={generateBrowserSourceUrl} size="sm">Refresh</Button>
+            </div>
+          </div>
+        )}
+
         <Button onClick={isConnected ? disconnect : handleConnect} size="sm" className="w-full">
           {isConnected ? 'Disconnect' : 'Connect'}
         </Button>

@@ -11,6 +11,8 @@ import ChannelPointConfig from "./components/ChannelPointConfig"
 import OBSConfig from "./components/OBSConfig"
 import { UserProfileDisplay } from "./components/UserProfileDisplay"
 import { useOBSWebSocket } from "./hooks/useOBSWebSocket"
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 export default function Component() {
   const { 
@@ -22,7 +24,12 @@ export default function Component() {
     setTwitchConnected,
     setTwitchAccessToken,
     setShowSettings,
-    setOpenAIConnected // Remove this line if you're not using setOpenAIConnected
+    setOpenAIConnected, // Remove this line if you're not using setOpenAIConnected
+    obsSourceType,
+    obsSelectedSource,
+    setObsSelectedSource,
+    obsBrowserSourceUrl,
+    generateBrowserSourceUrl
   } = useAppStore()
   const { connect: connectOBS, disconnect: disconnectOBS, getImageSources, error: obsError, isConnected } = useOBSWebSocket()
   const [imageSources, setImageSources] = useState<string[]>([])
@@ -68,6 +75,12 @@ export default function Component() {
       setImageSources([])
     }
   }, [obsConnected, fetchImageSources])
+
+  useEffect(() => {
+    if (obsConnected && obsSourceType === 'browser' && !obsBrowserSourceUrl) {
+      generateBrowserSourceUrl()
+    }
+  }, [obsConnected, obsSourceType, obsBrowserSourceUrl, generateBrowserSourceUrl])
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 text-gray-800">
@@ -149,24 +162,37 @@ export default function Component() {
 
           {obsConnected && (
             <div className="bg-white p-4 rounded shadow">
-              <h2 className="text-lg font-semibold mb-2">Image Source</h2>
-              <Label htmlFor="image-source" className="block mb-1">Select Image Source:</Label>
-              <Select
-                value={selectedSource}
-                onValueChange={setSelectedSource}
-                onOpenChange={fetchImageSources}
-              >
-                <SelectTrigger id="image-source" className="w-full">
-                  <SelectValue placeholder="Select Image Source" />
-                </SelectTrigger>
-                <SelectContent>
-                  {imageSources.map((source) => (
-                    <SelectItem key={source} value={source}>
-                      {source}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <h2 className="text-lg font-semibold mb-2">OBS Source Configuration</h2>
+              {obsSourceType === 'image' ? (
+                <>
+                  <Label htmlFor="image-source" className="block mb-1">Select Image Source:</Label>
+                  <Select
+                    value={obsSelectedSource}
+                    onValueChange={setObsSelectedSource}
+                    onOpenChange={fetchImageSources}
+                  >
+                    <SelectTrigger id="image-source" className="w-full">
+                      <SelectValue placeholder="Select Image Source" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {imageSources.map((source) => (
+                        <SelectItem key={source} value={source}>
+                          {source}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </>
+              ) : (
+                <div>
+                  <p className="mb-1">Browser Source URL:</p>
+                  <div className="flex items-center space-x-2">
+                    <Input value={obsBrowserSourceUrl} readOnly className="flex-grow" />
+                    <Button onClick={generateBrowserSourceUrl} size="sm">Refresh URL</Button>
+                  </div>
+                  <p className="text-sm mt-1">Use this URL to create a browser source in OBS.</p>
+                </div>
+              )}
             </div>
           )}
         </div>
