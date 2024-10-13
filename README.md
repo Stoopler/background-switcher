@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Background Changer
 
-## Getting Started
+Background Changer is a desktop application that integrates with Twitch, OBS, and image generation APIs to change the background image of a specific OBS source based on Twitch channel point redemptions.
 
-First, run the development server:
+## Current Functionality
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Twitch OAuth integration:
+  - Login and logout functionality
+  - Display of user profile information
+- OBS WebSocket connection:
+  - Configurable WebSocket URL, port, and password
+  - Connection status display
+  - Option to choose between Image Source and Browser Source
+  - For Image Source: Ability to list and select image sources from OBS
+  - For Browser Source: Generates a static URL for use in OBS
+- Twitch Channel Point Reward management:
+  - Create, update, enable/disable, and delete custom rewards
+  - Configure reward title, cost, and prompt
+- Settings dialog for configuring Twitch, OBS, and Channel Point Reward settings
+- Persistent storage of settings using local storage
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Outstanding Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- OpenAI (or alternative image generation API) integration:
+  - Configurable API endpoint selection
+  - API key input
+  - Prompt configuration
+  - Image size selection
+- Image generation based on channel point redemptions
+- Automatic updating of OBS image source with generated images
+- Web server for displaying generated images as a browser source in OBS
+- Browser source URL display for easy copying into OBS
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How to Run the Current Implementation
 
-## Learn More
+1. Clone the repository:   ```
+   git clone https://github.com/Stoopler/background-switcher.git
+   cd background-changer   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. Install dependencies:   ```
+   npm install   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Create a `.env.local` file in the root directory with the following content:   ```
+   NEXT_PUBLIC_TWITCH_CLIENT_ID=your_twitch_client_id
+   TWITCH_CLIENT_SECRET=your_twitch_client_secret   ```
+   Replace `your_twitch_client_id` and `your_twitch_client_secret` with your actual Twitch application credentials.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. Run the development server:   ```
+   npm run dev   ```
 
-## Deploy on Vercel
+5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Configuration
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Click the "Settings" button in the top menu to open the settings dialog.
+2. In the Twitch Auth section, click "Connect" to authenticate with Twitch.
+3. In the OBS Config section, enter your OBS WebSocket details and click "Connect".
+4. In the Channel Point Config section, set up your custom reward for background changing.
+
+## Notes
+
+- This application is currently in development and not all features are implemented.
+- Ensure you have OBS running with the WebSocket server enabled before attempting to connect.
+- You need to have a Twitch Developer application set up to use the Twitch integration features.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
