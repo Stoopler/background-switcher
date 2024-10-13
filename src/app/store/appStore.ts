@@ -3,10 +3,17 @@ import { persist } from 'zustand/middleware'
 
 interface RewardInfo {
   id: string
+  broadcaster_id: string
   title: string
   cost: number
   prompt: string
   is_enabled: boolean
+}
+
+interface LogEntry {
+  message: string
+  timestamp: string
+  details?: string
 }
 
 interface AppState {
@@ -38,6 +45,10 @@ interface AppState {
   setObsBrowserSourceUrl: (url: string) => void
   refreshBrowserSourceUrl: () => void
   generateBrowserSourceUrl: () => void
+  debugLog: LogEntry[]
+  addLogEntry: (message: string, details?: string) => void
+  broadcasterId: string | null
+  setBroadcasterId: (id: string | null) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -73,6 +84,15 @@ export const useAppStore = create<AppState>()(
       generateBrowserSourceUrl: () => set((state) => ({ 
         obsBrowserSourceUrl: `${window.location.origin}/api/image?t=${Date.now()}` 
       })),
+      debugLog: [],
+      addLogEntry: (message, details) => set((state) => ({
+        debugLog: [
+          { message, timestamp: new Date().toISOString(), details },
+          ...state.debugLog.slice(0, 19) // Keep only the last 20 entries
+        ]
+      })),
+      broadcasterId: null,
+      setBroadcasterId: (id) => set({ broadcasterId: id }),
     }),
     {
       name: 'background-changer-storage',

@@ -1,79 +1,29 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useAppStore } from '../store/appStore'
 
-interface TwitchReward {
-  id: string
-  title: string
-  cost: number
-  prompt: string
-  is_enabled: boolean
-}
-
 function ChannelPointConfig() {
-  const { twitchAccessToken, channelPointReward, setChannelPointReward } = useAppStore()
-  const [rewardTitle, setRewardTitle] = useState('')
+  const { 
+    twitchAccessToken, 
+    channelPointReward, 
+    setChannelPointReward, 
+    addLogEntry,
+    broadcasterId
+  } = useAppStore()
+
+  const [rewardTitle, setRewardTitle] = useState('AI Background Change')
   const [rewardCost, setRewardCost] = useState('')
   const [rewardPrompt, setRewardPrompt] = useState('')
-  const [broadcasterId, setBroadcasterId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState('')
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
   const [deleteConfirmation, setDeleteConfirmation] = useState(false)
 
-  useEffect(() => {
-    if (twitchAccessToken) {
-      fetchBroadcasterId()
-    }
-  }, [twitchAccessToken])
+  const fetchExistingReward = useCallback(async () => {
+    if (!twitchAccessToken || !broadcasterId || channelPointReward) return
 
-  useEffect(() => {
-    if (channelPointReward) {
-      setRewardTitle(channelPointReward.title)
-      setRewardCost(channelPointReward.cost.toString())
-      setRewardPrompt(channelPointReward.prompt)
-    }
-  }, [channelPointReward])
-
-  useEffect(() => {
-    if (showSuccessMessage) {
-      const timer = setTimeout(() => {
-        setShowSuccessMessage(false)
-      }, 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [showSuccessMessage])
-
-  const clearFormFields = () => {
-    setRewardTitle('')
-    setRewardCost('')
-    setRewardPrompt('')
-  }
-
-  const fetchBroadcasterId = async () => {
-    try {
-      const response = await fetch('https://api.twitch.tv/helix/users', {
-        headers: {
-          'Authorization': `Bearer ${twitchAccessToken}`,
-          'Client-Id': process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID!
-        }
-      })
-      const data = await response.json()
-      if (data.data && data.data.length > 0) {
-        setBroadcasterId(data.data[0].id)
-        fetchExistingReward(data.data[0].id)
-      }
-    } catch (err) {
-      console.error('Error fetching broadcaster ID:', err)
-      setError('Failed to fetch broadcaster ID')
-    }
-  }
-
-  const fetchExistingReward = async (broadcasterId: string) => {
     setIsLoading(true)
     setError(null)
     try {
@@ -84,15 +34,21 @@ function ChannelPointConfig() {
         }
       })
       const data = await response.json()
-      const existingReward = data.data.find((reward: TwitchReward) => reward.title === channelPointReward?.title)
+      const existingReward = data.data.find((reward: any) => reward.title === rewardTitle)
       if (existingReward) {
         setChannelPointReward({
           id: existingReward.id,
+          broadcaster_id: broadcasterId,
           title: existingReward.title,
           cost: existingReward.cost,
           prompt: existingReward.prompt || '',
           is_enabled: existingReward.is_enabled
         })
+        setRewardCost(existingReward.cost.toString())
+        setRewardPrompt(existingReward.prompt || '')
+        addLogEntry('Existing reward found')
+      } else {
+        addLogEntry('No existing reward found')
       }
     } catch (err) {
       console.error('Error fetching existing reward:', err)
@@ -100,6 +56,18 @@ function ChannelPointConfig() {
     } finally {
       setIsLoading(false)
     }
+  }, [twitchAccessToken, broadcasterId, channelPointReward, rewardTitle, setChannelPointReward, addLogEntry])
+
+  useEffect(() => {
+    if (twitchAccessToken && broadcasterId && !channelPointReward) {
+      fetchExistingReward()
+    }
+  }, [twitchAccessToken, broadcasterId, channelPointReward, fetchExistingReward])
+
+  const clearFormFields = () => {
+    setRewardTitle('')
+    setRewardCost('')
+    setRewardPrompt('')
   }
 
   const handleSaveReward = async () => {
@@ -110,15 +78,16 @@ function ChannelPointConfig() {
 
     setIsLoading(true)
     setError(null)
+
     try {
-      const url = channelPointReward?.id
+      const endpoint = channelPointReward
         ? `https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id=${broadcasterId}&id=${channelPointReward.id}`
         : `https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id=${broadcasterId}`
-      
-      const method = channelPointReward?.id ? 'PATCH' : 'POST'
 
-      const response = await fetch(url, {
-        method,
+      const method = channelPointReward ? 'PATCH' : 'POST'
+
+      const response = await fetch(endpoint, {
+        method: method,
         headers: {
           'Authorization': `Bearer ${twitchAccessToken}`,
           'Client-Id': process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID!,
@@ -129,7 +98,8 @@ function ChannelPointConfig() {
           cost: parseInt(rewardCost),
           prompt: rewardPrompt,
           is_enabled: true,
-          should_redemptions_skip_request_queue: true
+          should_redemptions_skip_request_queue: true,
+          is_user_input_required: true
         })
       })
 
@@ -139,19 +109,20 @@ function ChannelPointConfig() {
       }
 
       const data = await response.json()
-      const savedReward = data.data[0] as TwitchReward
+      const savedReward = data.data[0]
       setChannelPointReward({
         id: savedReward.id,
+        broadcaster_id: broadcasterId,
         title: savedReward.title,
         cost: savedReward.cost,
         prompt: savedReward.prompt || '',
         is_enabled: savedReward.is_enabled
       })
-      setSuccessMessage(channelPointReward?.id ? 'Reward Updated!' : 'Reward Created!')
-      setShowSuccessMessage(true)
+      addLogEntry(channelPointReward ? 'Reward Updated' : 'Reward Created')
     } catch (err) {
       console.error('Error saving reward:', err)
       setError(err instanceof Error ? err.message : 'Failed to save reward')
+      addLogEntry('Error saving reward')
     } finally {
       setIsLoading(false)
     }
@@ -180,16 +151,16 @@ function ChannelPointConfig() {
       }
 
       const data = await response.json()
-      const updatedReward = data.data[0] as TwitchReward
+      const updatedReward = data.data[0]
       setChannelPointReward({
-        ...updatedReward,
+        ...channelPointReward,
         is_enabled: !channelPointReward.is_enabled
       })
-      setSuccessMessage(`Reward ${channelPointReward.is_enabled ? 'Disabled' : 'Enabled'}!`)
-      setShowSuccessMessage(true)
+      addLogEntry(`Reward ${channelPointReward.is_enabled ? 'Disabled' : 'Enabled'}`)
     } catch (err) {
       console.error(`Error ${channelPointReward.is_enabled ? 'disabling' : 'enabling'} reward:`, err)
       setError(err instanceof Error ? err.message : `Failed to ${channelPointReward.is_enabled ? 'disable' : 'enable'} reward`)
+      addLogEntry(`Error ${channelPointReward.is_enabled ? 'disabling' : 'enabling'} reward`)
     } finally {
       setIsLoading(false)
     }
@@ -220,11 +191,11 @@ function ChannelPointConfig() {
 
       setChannelPointReward(null)
       clearFormFields()
-      setSuccessMessage('Reward Deleted!')
-      setShowSuccessMessage(true)
+      addLogEntry('Reward Deleted')
     } catch (err) {
       console.error('Error deleting reward:', err)
       setError(err instanceof Error ? err.message : 'Failed to delete reward')
+      addLogEntry('Error deleting reward')
     } finally {
       setIsLoading(false)
       setDeleteConfirmation(false)
@@ -258,7 +229,11 @@ function ChannelPointConfig() {
           />
         </div>
         <div className="flex items-center justify-between">
-          <Button onClick={handleSaveReward} disabled={isLoading || !broadcasterId} size="sm">
+          <Button 
+            onClick={handleSaveReward} 
+            disabled={isLoading || !broadcasterId} 
+            size="sm"
+          >
             {isLoading ? 'Saving...' : 'Save'}
           </Button>
           {channelPointReward && (
@@ -283,10 +258,8 @@ function ChannelPointConfig() {
             </>
           )}
         </div>
-        {showSuccessMessage && (
-          <p className="text-green-500 text-sm">{successMessage}</p>
-        )}
         {error && <p className="text-red-500 text-sm">{error}</p>}
+        <p className="text-sm text-gray-500">Broadcaster ID: {broadcasterId || 'Not set'}</p>
       </div>
     </div>
   )

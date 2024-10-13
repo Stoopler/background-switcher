@@ -13,6 +13,8 @@ import { UserProfileDisplay } from "./components/UserProfileDisplay"
 import { useOBSWebSocket } from "./hooks/useOBSWebSocket"
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { RedemptionHandler } from './components/RedemptionHandler'
+import { DebugLog } from './components/DebugLog'
 
 export default function Component() {
   const { 
@@ -129,72 +131,75 @@ export default function Component() {
       <div className="flex-1 p-4 overflow-auto">
         <h1 className="text-2xl font-bold mb-4">Stoopler Tools</h1>
         <h4 className="text-1xl mb-4">Channel Point AI Generated Background Changer</h4>
-        <div className="space-y-4">
-          <div className="bg-white p-4 rounded shadow">
-            <h2 className="text-lg font-semibold mb-2">Connection Status</h2>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span>Twitch:</span>
-                {twitchConnected ? (
-                  <span className="text-green-500 flex items-center"><CheckCircle2 className="w-4 h-4 mr-1" /> Connected</span>
-                ) : (
-                  <span className="text-red-500 flex items-center"><XCircle className="w-4 h-4 mr-1" /> Not Connected</span>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span>OBS:</span>
-                {obsConnected ? (
-                  <span className="text-green-500 flex items-center"><CheckCircle2 className="w-4 h-4 mr-1" /> Connected</span>
-                ) : (
-                  <span className="text-red-500 flex items-center"><XCircle className="w-4 h-4 mr-1" /> Not Connected</span>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span>OpenAI API:</span>
-                {openAIConnected ? (
-                  <span className="text-green-500 flex items-center"><CheckCircle2 className="w-4 h-4 mr-1" /> Connected</span>
-                ) : (
-                  <span className="text-red-500 flex items-center"><XCircle className="w-4 h-4 mr-1" /> Not Connected</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {obsConnected && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
             <div className="bg-white p-4 rounded shadow">
-              <h2 className="text-lg font-semibold mb-2">OBS Source Configuration</h2>
-              {obsSourceType === 'image' ? (
-                <>
-                  <Label htmlFor="image-source" className="block mb-1">Select Image Source:</Label>
-                  <Select
-                    value={obsSelectedSource}
-                    onValueChange={setObsSelectedSource}
-                    onOpenChange={fetchImageSources}
-                  >
-                    <SelectTrigger id="image-source" className="w-full">
-                      <SelectValue placeholder="Select Image Source" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {imageSources.map((source) => (
-                        <SelectItem key={source} value={source}>
-                          {source}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </>
-              ) : (
-                <div>
-                  <p className="mb-1">Browser Source URL:</p>
-                  <div className="flex items-center space-x-2">
-                    <Input value={obsBrowserSourceUrl} readOnly className="flex-grow" />
-                    <Button onClick={generateBrowserSourceUrl} size="sm">Refresh URL</Button>
-                  </div>
-                  <p className="text-sm mt-1">Use this URL to create a browser source in OBS.</p>
+              <h2 className="text-lg font-semibold mb-2">Connection Status</h2>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span>Twitch:</span>
+                  {twitchConnected ? (
+                    <span className="text-green-500 flex items-center"><CheckCircle2 className="w-4 h-4 mr-1" /> Connected</span>
+                  ) : (
+                    <span className="text-red-500 flex items-center"><XCircle className="w-4 h-4 mr-1" /> Not Connected</span>
+                  )}
                 </div>
-              )}
+                <div className="flex items-center justify-between">
+                  <span>OBS:</span>
+                  {obsConnected ? (
+                    <span className="text-green-500 flex items-center"><CheckCircle2 className="w-4 h-4 mr-1" /> Connected</span>
+                  ) : (
+                    <span className="text-red-500 flex items-center"><XCircle className="w-4 h-4 mr-1" /> Not Connected</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>OpenAI API:</span>
+                  {openAIConnected ? (
+                    <span className="text-green-500 flex items-center"><CheckCircle2 className="w-4 h-4 mr-1" /> Connected</span>
+                  ) : (
+                    <span className="text-red-500 flex items-center"><XCircle className="w-4 h-4 mr-1" /> Not Connected</span>
+                  )}
+                </div>
+              </div>
             </div>
-          )}
+
+            {obsConnected && (
+              <div className="bg-white p-4 rounded shadow">
+                <h2 className="text-lg font-semibold mb-2">OBS Source Configuration</h2>
+                {obsSourceType === 'image' ? (
+                  <>
+                    <Label htmlFor="image-source" className="block mb-1">Select Image Source:</Label>
+                    <Select
+                      value={obsSelectedSource}
+                      onValueChange={setObsSelectedSource}
+                      onOpenChange={fetchImageSources}
+                    >
+                      <SelectTrigger id="image-source" className="w-full">
+                        <SelectValue placeholder="Select Image Source" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {imageSources.map((source) => (
+                          <SelectItem key={source} value={source}>
+                            {source}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                ) : (
+                  <div>
+                    <p className="mb-1">Browser Source URL:</p>
+                    <div className="flex items-center space-x-2">
+                      <Input value={obsBrowserSourceUrl} readOnly className="flex-grow" />
+                      <Button onClick={generateBrowserSourceUrl} size="sm">Refresh URL</Button>
+                    </div>
+                    <p className="text-sm mt-1">Use this URL to create a browser source in OBS.</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <DebugLog />
         </div>
       </div>
 

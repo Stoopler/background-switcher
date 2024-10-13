@@ -9,7 +9,8 @@ function TwitchAuth() {
     twitchConnected, 
     twitchAccessToken,
     setTwitchConnected,
-    setTwitchAccessToken
+    setTwitchAccessToken,
+    setBroadcasterId
   } = useAppStore()
 
   useEffect(() => {
@@ -47,6 +48,7 @@ function TwitchAuth() {
       if (data.data && data.data.length > 0) {
         setTwitchConnected(true)
         setTwitchAccessToken(accessToken)
+        setBroadcasterId(data.data[0].id)
       }
     } catch (error) {
       console.error('Error fetching user profile:', error)
